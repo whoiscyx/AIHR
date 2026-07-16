@@ -3,7 +3,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/python-3.13-blue.svg" alt="Python">
   <img src="https://img.shields.io/badge/Ollama-local%20LLM-green.svg" alt="Ollama">
-  <img src="https://img.shields.io/badge/Platform-Windows%20%7C%20-lightgrey.svg" alt="Platform">
+  <img src="https://img.shields.io/badge/Platform-Windows-lightgrey.svg" alt="Platform">
   <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License">
 </p>
 
