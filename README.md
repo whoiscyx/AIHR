@@ -35,9 +35,9 @@
 
 ## 🖼️ 效果截图
 
-> 你可以把界面截图放到 `docs/screenshot.png`，然后把下面这行注释取消即可显示。
 >
-> [界面截图](docs/screenshot.png)
+> [界面截图1](docs/screenshot.png)
+> [界面截图2](docs/screenshot1.png)
 
 ---
 
