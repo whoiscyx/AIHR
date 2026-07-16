@@ -37,7 +37,7 @@
 
 > 你可以把界面截图放到 `docs/screenshot.png`，然后把下面这行注释取消即可显示。
 >
-> <!-- ![界面截图](docs/screenshot.png) -->
+> [界面截图](docs/screenshot.png)
 
 ---
 
@@ -60,16 +60,21 @@ flowchart LR
 
 ## 📋 目录
 
-- [环境要求](#环境要求)
-- [快速开始](#快速开始)
-- [OCR 引擎配置](#ocr-引擎配置)
-- [使用步骤](#使用步骤)
-- [API 说明](#api-说明)
-- [院校排名数据](#院校排名数据)
-- [目录结构](#目录结构)
-- [常见问题](#常见问题)
-- [路线图](#路线图)
-- [许可证](#许可证)
+- [📄 本地简历 OCR + AI 岗位打分](#-本地简历-ocr--ai-岗位打分)
+  - [✨ 功能特性](#-功能特性)
+  - [🖼️ 效果截图](#️-效果截图)
+  - [🧩 工作原理](#-工作原理)
+  - [📋 目录](#-目录)
+  - [🔧 环境要求](#-环境要求)
+  - [🚀 快速开始](#-快速开始)
+  - [⚙️ OCR 引擎配置](#️-ocr-引擎配置)
+  - [📖 使用步骤](#-使用步骤)
+  - [🔌 API 说明](#-api-说明)
+  - [🏫 院校排名数据](#-院校排名数据)
+  - [📁 目录结构](#-目录结构)
+  - [❓ 常见问题](#-常见问题)
+  - [🗺️ 路线图](#️-路线图)
+  - [📄 许可证](#-许可证)
 
 ---
 
@@ -87,20 +92,17 @@ flowchart LR
 ## 🚀 快速开始
 
 ```bash
-# 1. 克隆仓库（首次）
-git clone <your-repo-url>
-cd AIHR
+# 1. 克隆仓库
 
-# 2. 创建虚拟环境
-python -m venv .venv
-.venv\Scripts\activate        # Windows
-# source .venv/bin/activate   # macOS / Linux
+# 2. 安装ocr软件
+作者使用版本Umi-OCR_Paddle_v2.1.5.7z.exe
+仓库链接:https://github.com/hiroi-sora/Umi-OCR
 
 # 3. 安装依赖（使用本机 Umi-OCR 时只需核心依赖）
 pip install -r requirements.txt
 # 若没有 Umi-OCR、需要 EasyOCR 兜底，参见下方“OCR 引擎配置”
 
-# 4. 准备本地模型
+# 4. 准备ollama本地模型(ollama已安装并运行)
 ollama pull qwen3.5:4b        # 任选一个中文模型
 
 # 5. 启动服务

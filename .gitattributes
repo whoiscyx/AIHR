@@ -1,0 +1,13 @@
+# 统一以 LF 存储文本文件，避免 Windows(CRLF) 与 Linux/macOS(LF) 之间的换行符差异
+# 也确保 shell 脚本（start.sh）在任何平台都保持 LF，避免执行报错
+* text=auto eol=lf
+
+# 显式声明：shell 脚本必须 LF
+*.sh text eol=lf
+
+# 二进制文件不转换
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.pdf binary
