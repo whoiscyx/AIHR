@@ -1,0 +1,33 @@
+# ----- Python -----
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+.pytest_cache/
+.mypy_cache/
+
+# ----- 虚拟环境（请勿提交，体积庞大） -----
+.venv/
+venv/
+env/
+ENV/
+
+# ----- WorkBuddy / Agent 工作目录 -----
+.workbuddy/
+
+# ----- 运行时产物 -----
+uploads/
+*.tmp
+*.log
+*.pdf.tmp
+
+# ----- IDE / 编辑器 -----
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# ----- 操作系统 -----
+.DS_Store
+Thumbs.db
+Desktop.ini

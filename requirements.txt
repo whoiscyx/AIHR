@@ -1,0 +1,21 @@
+# ============================================================
+# 核心依赖（使用本机 Umi-OCR 作为 OCR 引擎时，只需下面这些）
+# 安装：pip install -r requirements.txt
+# ============================================================
+fastapi==0.139.0
+uvicorn==0.51.0
+pydantic==2.13.4
+pymupdf==1.28.0          # PyMuPDF，文本型 PDF 直接抽取
+pdfplumber==0.11.10      # PDF 文本/表格辅助解析
+python-docx==1.2.0       # DOCX 简历解析
+ollama==0.6.2            # 本地大模型客户端
+python-multipart==0.0.32 # FastAPI 文件上传 / 表单
+
+# ============================================================
+# 可选：EasyOCR 兜底 OCR
+# 仅当你【没有】安装 Umi-OCR、且希望用 EasyOCR 作为退路时才需要。
+# 注意：torch 必须装 CPU 版，否则会拉取体积庞大的 CUDA 版。
+#   1) pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+#   2) pip install easyocr==1.7.2
+# （pillow 会作为上述依赖的传递项自动安装，无需单独声明）
+# ============================================================
