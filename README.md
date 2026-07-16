@@ -36,8 +36,8 @@
 ## 🖼️ 效果截图
 
 >
-> [界面截图1](docs/screenshot.png)
-> [界面截图2](docs/screenshot1.png)
+> ![界面截图1](docs/screenshot.png)
+> ![界面截图2](docs/screenshot1.png)
 
 ---
 
