@@ -5,6 +5,17 @@ set -e
 # 切换到脚本所在目录，确保无论从哪里调用都能找到 .venv 与 app 包
 cd "$(dirname "$0")"
 
+# 关闭占用 8000 端口的旧进程（来自上一次启动）
+if command -v lsof >/dev/null 2>&1; then
+    OLD_PIDS=$(lsof -ti tcp:8000 2>/dev/null || true)
+    if [ -n "$OLD_PIDS" ]; then
+        echo "[cleanup] 关闭占用 8000 端口的旧进程: $OLD_PIDS"
+        kill -9 $OLD_PIDS 2>/dev/null
+    fi
+elif command -v fuser >/dev/null 2>&1; then
+    fuser -k 8000/tcp 2>/dev/null
+fi
+
 # 若虚拟环境不存在则创建
 if [ ! -f ".venv/bin/activate" ] && [ ! -f ".venv/Scripts/activate" ]; then
     echo "[setup] 未检测到 .venv，正在创建虚拟环境 ..."

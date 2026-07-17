@@ -4,6 +4,11 @@ setlocal
 REM Change to the directory of this script so it works from any cwd
 cd /d "%~dp0"
 
+REM Kill any process still listening on port 8000 from a previous run
+for /f "tokens=5" %%P in ('netstat -ano ^| findstr "LISTENING" ^| findstr /c:":8000 "') do (
+    taskkill /F /PID %%P >nul 2>&1
+)
+
 REM Create the virtual environment if it does not exist yet
 if not exist ".venv\Scripts\activate.bat" (
     echo [setup] Creating virtual environment in .venv ...
