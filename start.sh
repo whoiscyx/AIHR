@@ -1,23 +1,28 @@
 #!/usr/bin/env bash
-# 启动本地简历 OCR + AI 打分服务
-# 前提：已安装依赖（见 README），且 Ollama 服务已运行（ollama serve）。
-
+# 启动本地简历 OCR + AI 打分服务（自动创建 venv 并安装依赖）
 set -e
 
 # 切换到脚本所在目录，确保无论从哪里调用都能找到 .venv 与 app 包
 cd "$(dirname "$0")"
 
-# 优先 Linux/macOS 的 bin/activate，其次 Windows(Git Bash) 的 Scripts/activate
+# 若虚拟环境不存在则创建
+if [ ! -f ".venv/bin/activate" ] && [ ! -f ".venv/Scripts/activate" ]; then
+    echo "[setup] 未检测到 .venv，正在创建虚拟环境 ..."
+    python3 -m venv .venv || python -m venv .venv
+fi
+
+# 激活 venv（兼容 Linux/macOS 与 Windows Git Bash）
 if [ -f ".venv/bin/activate" ]; then
     source .venv/bin/activate
-elif [ -f ".venv/Scripts/activate" ]; then
-    source .venv/Scripts/activate
 else
-    echo "[错误] 未检测到虚拟环境 .venv，请先按 README 执行："
-    echo "       python -m venv .venv"
-    echo "       source .venv/bin/activate   # Windows(Git Bash): source .venv/Scripts/activate"
-    echo "       pip install -r requirements.txt"
-    exit 1
+    source .venv/Scripts/activate
+fi
+
+# 若依赖缺失则自动安装
+if ! python -c "import fastapi" >/dev/null 2>&1; then
+    echo "[setup] 正在安装依赖（requirements.txt）..."
+    python -m pip install --upgrade pip
+    pip install -r requirements.txt
 fi
 
 echo "正在启动服务，请稍候……（首次加载模型可能稍慢）"

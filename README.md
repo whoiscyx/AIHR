@@ -1,16 +1,9 @@
 # 📄 本地简历 OCR + AI 岗位打分
 
-<p align="center">
-  <img src="https://img.shields.io/badge/python-3.13-blue.svg" alt="Python">
-  <img src="https://img.shields.io/badge/Ollama-local%20LLM-green.svg" alt="Ollama">
-  <img src="https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg" alt="Platform">
-  <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License">
-</p>
-
 > **100% 本机运行**的简历评估工具：**OCR 识别简历内容 → 本地 Ollama 大模型按岗位需求结构化打分**。
 > 数据全程不出本机，无需联网、无需任何 API Key。
 
----
+***
 
 ## ✨ 功能特性
 
@@ -31,15 +24,14 @@
 - ✅ **结果自动排序**：批量打分完成后，结果按综合分从高到低排列，方便快速筛选。
 - ✅ **Web 界面**：批量上传、填写 JD、调权重、选模型、一键出结果（直角矩形 UI）。
 
----
+***
 
 ## 🖼️ 效果截图
 
-> 你可以把界面截图放到 `docs/screenshot.png`，然后把下面这行注释取消即可显示。
->
 > [界面截图](docs/screenshot.png)
+> [界面截图](docs/screenshot1.png)
 
----
+***
 
 ## 🧩 工作原理
 
@@ -56,7 +48,7 @@ flowchart LR
     H --> I[Web 界面展示]
 ```
 
----
+***
 
 ## 📋 目录
 
@@ -73,21 +65,21 @@ flowchart LR
   - [🏫 院校排名数据](#-院校排名数据)
   - [📁 目录结构](#-目录结构)
   - [❓ 常见问题](#-常见问题)
-  - [🗺️ 路线图](#️-路线图)
+  - [👌 欢迎提 Issue 与 PR！](#-欢迎提-issue-与-pr)
   - [📄 许可证](#-许可证)
 
----
+***
 
 ## 🔧 环境要求
 
-| 项目 | 说明 |
-|------|------|
-| 操作系统 | Windows / macOS / Linux |
-| Python | 3.10+（本项目用 3.13 验证） |
-| Ollama | 已安装并运行，且至少有一个模型（推荐 `qwen3.5:4b` 或 `qwen3.5:9b` 等中文模型） |
+| 项目     | 说明                                                                                                           |
+| ------ | ------------------------------------------------------------------------------------------------------------ |
+| 操作系统   | Windows                                                                                                      |
+| Python | 3.10+（本项目用 3.13 验证）                                                                                          |
+| Ollama | 已安装并运行，且至少有一个模型（推荐 `qwen3.5:4b` 或 `qwen3.5:9b` 等中文模型）                                                        |
 | OCR 引擎 | **二选一即可**：① 本机已装 [Umi-OCR](https://github.com/hiroi-sora/Umi-OCR)（Paddle 版，推荐）；② 不装 Umi-OCR，改由本项目 EasyOCR 兜底 |
 
----
+***
 
 ## 🚀 快速开始
 
@@ -107,14 +99,14 @@ ollama pull qwen3.5:4b        # 任选一个中文模型
 
 # 5. 启动服务
 python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
-# 或直接双击 start.bat（Windows）/ 运行 start.sh（macOS / Linux）
+# 或直接双击 start.bat（Windows）/ 运行 start.sh
 ```
 
 浏览器打开 <http://localhost:8000> 即可使用。
 
 > 💡 Windows 下打开 Ollama 桌面应用即会自动启动 Ollama 服务；其他系统可运行 `ollama serve`。首次打分若模型未加载会稍慢（自动加载）。
 
----
+***
 
 ## ⚙️ OCR 引擎配置
 
@@ -141,7 +133,7 @@ pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
 pip install easyocr
 ```
 
----
+***
 
 ## 📖 使用步骤
 
@@ -153,17 +145,17 @@ pip install easyocr
 6. 点击「开始评分」，右侧按综合分从高到低展示每份简历的整体分、各维度条形图（含打分依据）、优势/差距与面试建议。
 7. 评分完成后仍可随时拖动/修改权重，结果会**实时重算并重排序**，无需重新调用 AI。
 
----
+***
 
 ## 🔌 API 说明
 
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| GET  | `/api/models`  | 返回本机 Ollama 模型列表与默认模型 |
-| GET  | `/api/weights` | 返回默认维度顺序与默认权重，供前端初始化权重编辑器 |
+| 方法   | 路径             | 说明                                                                                                                 |
+| ---- | -------------- | ------------------------------------------------------------------------------------------------------------------ |
+| GET  | `/api/models`  | 返回本机 Ollama 模型列表与默认模型                                                                                              |
+| GET  | `/api/weights` | 返回默认维度顺序与默认权重，供前端初始化权重编辑器                                                                                          |
 | POST | `/api/score`   | `resumes`(多文件) + `jd`(文本) + `model`(模型名) + `weights`(权重 JSON) + `preferred_schools`(认可院校名单文本，可选) → 批量结构化评分（按综合分降序） |
-| GET  | `/api/engine`  | 返回当前实际使用的 OCR 后端（Umi-OCR 或 EasyOCR 兜底） |
-| GET  | `/`            | 前端首页 |
+| GET  | `/api/engine`  | 返回当前实际使用的 OCR 后端（Umi-OCR 或 EasyOCR 兜底）                                                                             |
+| GET  | `/`            | 前端首页                                                                                                               |
 
 `/api/score` 返回示例：
 
@@ -194,7 +186,7 @@ pip install easyocr
 }
 ```
 
----
+***
 
 ## 🏫 院校排名数据
 
@@ -206,7 +198,7 @@ pip install easyocr
 
 如需接入实时排名，可替换 `app/rank_data.py` 的数据源。
 
----
+***
 
 ## 📁 目录结构
 
@@ -228,7 +220,7 @@ pip install easyocr
 └── README.md
 ```
 
----
+***
 
 ## ❓ 常见问题
 
@@ -240,19 +232,11 @@ pip install easyocr
 - **想调整院校排名参考？** 编辑 `app/rank_data.py` 的数据源；识别/注入逻辑见 `app/prompts.py` 的 `detect_schools` / `format_school_ref`。
 - **找不到 Umi-OCR / 想换路径？** 设置环境变量 `UMI_OCR_EXE` 指向你的 `PaddleOCR-json.exe`。
 
----
+***
 
-## 🗺️ 路线图
+## 👌 欢迎提 Issue 与 PR！
 
-- [ ] 常见校名简称（浙大 / 华科 等）模糊匹配映射
-- [ ] 导出评分结果为 Excel / CSV
-- [ ] 多 JD 模板管理与对比
-- [ ] Docker 化部署
-- [ ] 国际化（中英双语界面）
-
-欢迎提 Issue 与 PR！
-
----
+***
 
 ## 📄 许可证
 
