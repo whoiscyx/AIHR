@@ -12,7 +12,7 @@ import tempfile
 from pathlib import Path
 
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 
 from app.ocr import extract_text, ocr_backend_info
 from app.scorer import score_resume, list_models, DEFAULT_MODEL, DEFAULT_WEIGHTS
@@ -123,6 +123,12 @@ async def api_score(
         "results": results,
         "errors": errors,
     }
+
+
+@app.get("/favicon.ico")
+def favicon():
+    """返回 204 空响应，避免浏览器自动请求 favicon 时刷出 404 日志。"""
+    return Response(status_code=204)
 
 
 @app.get("/")
