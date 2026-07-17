@@ -26,5 +26,5 @@ if ! python -c "import fastapi" >/dev/null 2>&1; then
 fi
 
 echo "正在启动服务，请稍候……（首次加载模型可能稍慢）"
-echo "打开浏览器访问： http://localhost:8000"
-exec python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+echo "打开浏览器访问： http://127.0.0.1:8000"
+exec python -m uvicorn app.main:app --host 127.0.0.1 --port 8000

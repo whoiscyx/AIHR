@@ -98,11 +98,11 @@ pip install -r requirements.txt
 ollama pull qwen3.5:4b        # 任选一个中文模型
 
 # 5. 启动服务
-python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
 # 或直接双击 start.bat（Windows）/ 运行 start.sh
 ```
 
-浏览器打开 <http://localhost:8000> 即可使用。
+浏览器打开 <http://127.0.0.1:8000> 即可使用。
 
 > 💡 Windows 下打开 Ollama 桌面应用即会自动启动 Ollama 服务；其他系统可运行 `ollama serve`。首次打分若模型未加载会稍慢（自动加载）。
 
