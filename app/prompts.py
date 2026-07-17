@@ -1,5 +1,7 @@
 """提示词模板：把简历文本 + 岗位 JD 组装成发给大模型的消息。"""
 
+from typing import List, Tuple
+
 from app.rank_data import RANK_LIST, RANK_DICT
 
 # 软科 2025 中国大学排名（主榜 BCUR）Top500 已内置为离线查表（见 app/rank_data.py）。
@@ -24,9 +26,9 @@ SCHOOL_TIER_HINT = (
 )
 
 
-def detect_schools(text: str):
+def detect_schools(text: str) -> List[Tuple[str, int]]:
     """从简历文本中识别软科2025 Top500 院校名称，返回按名次升序的 [(name, rank)]。"""
-    found = []
+    found: List[Tuple[str, int]] = []
     for name, rank in RANK_DICT.items():
         if name in text:
             found.append((name, rank))
@@ -36,10 +38,10 @@ def detect_schools(text: str):
 
 def format_school_ref(text: str) -> str:
     """生成候选人院校的软科2025精确名次段落（评分核心依据）。"""
-    schools = detect_schools(text)
+    schools: List[Tuple[str, int]] = detect_schools(text)
     if not schools:
         return "（简历中未识别到软科2025 Top500 院校名称；请依据学历层次、专业契合及可能的院校标签综合判断）"
-    parts = []
+    parts: List[str] = []
     for name, rank in schools:
         if rank <= 30:
             tier = "第一梯队"
@@ -104,7 +106,7 @@ def build_messages(
     resume_text: str,
     job_description: str,
     preferred_schools: str = "",
-) -> list:
+) -> List[dict]:
     # 控制长度，避免超出上下文（简历一般不会这么长，但做个保险）
     resume_text = resume_text.strip()[:16000]
     job_description = job_description.strip()[:4000]

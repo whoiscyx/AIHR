@@ -10,7 +10,7 @@ OCR 引擎优先级：
 - 图片（png/jpg/jpeg/bmp/webp/tif/tiff）：直接 OCR。
 - DOCX：python-docx 抽取段落与表格文本。
 
-Umi-OCR 引擎路径可通过环境变量 UMI_OCR_EXE 覆盖；未设置时使用下方默认路径。
+配置项见 app/config.py，支持通过环境变量覆盖。
 """
 
 import os
@@ -24,23 +24,15 @@ import threading
 
 from pathlib import Path
 
-# ── Umi-OCR（PaddleOCR-json）引擎路径 ────────────────────────────────────────
-# 默认指向本机安装的 Umi-OCR Paddle 版自带的 PaddleOCR-json 引擎。
-# 如需换版本/路径，设置环境变量 UMI_OCR_EXE 即可（指向 PaddleOCR-json.exe）。
-DEFAULT_UMI_OCR_EXE = os.environ.get(
-    "UMI_OCR_EXE",
-    r"D:\software\OCR\Umi-OCR_Paddle_v2.1.5\UmiOCR-data\plugins\win7_x64_PaddleOCR-json\PaddleOCR-json.exe",
+from app.config import (
+    DEFAULT_UMI_OCR_EXE,
+    SCANNED_THRESHOLD,
+    ENGINE_INIT_TIMEOUT,
 )
-
-# 文本型 PDF 抽取后，若去空白字符长度小于此值，判定为扫描件，改用 OCR
-SCANNED_THRESHOLD = 60
 
 _IMAGE_EXTS = {".png", ".jpg", ".jpeg", ".bmp", ".webp", ".tif", ".tiff"}
 _PDF_EXTS = {".pdf"}
 _DOCX_EXTS = {".docx"}
-
-# 引擎进程初始化超时（秒）。Paddle 模型加载在机械盘/首启可能较慢。
-ENGINE_INIT_TIMEOUT = int(os.environ.get("UMI_OCR_INIT_TIMEOUT", "90"))
 
 
 def _umi_ocr_available() -> bool:
@@ -254,20 +246,11 @@ def _get_ocr_reader():
 
 
 def _ocr_image_bytes_easyocr(image_bytes: bytes) -> str:
-    """EasyOCR 兜底：先把字节存成临时图片，再识别。"""
-    import tempfile
+    """EasyOCR 兜底：直接从字节流识别（通过 BytesIO 避免临时文件）。"""
+    from io import BytesIO
 
     reader = _get_ocr_reader()
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as f:
-        f.write(image_bytes)
-        tmp = f.name
-    try:
-        results = reader.readtext(tmp, detail=0, paragraph=True)
-    finally:
-        try:
-            os.unlink(tmp)
-        except Exception:
-            pass
+    results = reader.readtext(BytesIO(image_bytes), detail=0, paragraph=True)
     return "\n".join(r.strip() for r in results if r and r.strip())
 
 
@@ -284,33 +267,64 @@ def _ocr_image_bytes(image_bytes: bytes) -> str:
 
 # ── 各格式提取 ──────────────────────────────────────────────────────────────
 def _extract_pdf_text(path: str) -> str:
-    """尝试从 PDF 抽取文本；文本不足则渲染图片 OCR。返回纯文本。"""
+    """尝试从 PDF 文件抽取文本；文本不足则渲染图片 OCR。返回纯文本。"""
     import fitz  # PyMuPDF
 
     doc = fitz.open(path)
     try:
-        texts = []
-        for page in doc:
-            txt = page.get_text().strip()
-            if txt:
-                texts.append(txt)
-        full = "\n".join(texts).strip()
-        if len(full) >= SCANNED_THRESHOLD:
-            return full
-        # 文本不足 → 扫描件，逐页渲染图片 OCR
-        ocr_parts = []
-        for page in doc:
-            pix = page.get_pixmap(dpi=200)
-            ocr_parts.append(_ocr_image_bytes(pix.tobytes("png")))
-        return "\n".join(p for p in ocr_parts if p.strip())
+        return _extract_pdf_from_doc(doc)
     finally:
         doc.close()
 
 
+def _extract_pdf_bytes(data: bytes) -> str:
+    """尝试从 PDF 字节流抽取文本；文本不足则渲染图片 OCR。返回纯文本。"""
+    import fitz  # PyMuPDF
+
+    doc = fitz.open(stream=data, filetype="pdf")
+    try:
+        return _extract_pdf_from_doc(doc)
+    finally:
+        doc.close()
+
+
+def _extract_pdf_from_doc(doc) -> str:
+    """从 PyMuPDF Document 对象提取文本（内部复用）。"""
+    texts = []
+    for page in doc:
+        txt = page.get_text().strip()
+        if txt:
+            texts.append(txt)
+    full = "\n".join(texts).strip()
+    if len(full) >= SCANNED_THRESHOLD:
+        return full
+    # 文本不足 → 扫描件，逐页渲染图片 OCR
+    ocr_parts = []
+    for page in doc:
+        pix = page.get_pixmap(dpi=200)
+        ocr_parts.append(_ocr_image_bytes(pix.tobytes("png")))
+    return "\n".join(p for p in ocr_parts if p.strip())
+
+
 def _extract_docx_text(path: str) -> str:
+    """从 DOCX 文件抽取文本。"""
     import docx
 
     document = docx.Document(path)
+    return _extract_docx_from_doc(document)
+
+
+def _extract_docx_bytes(data: bytes) -> str:
+    """从 DOCX 字节流抽取文本。"""
+    import docx
+    from io import BytesIO
+
+    document = docx.Document(BytesIO(data))
+    return _extract_docx_from_doc(document)
+
+
+def _extract_docx_from_doc(document) -> str:
+    """从 python-docx Document 对象提取文本（内部复用）。"""
     paras = [p.text for p in document.paragraphs if p.text and p.text.strip()]
     for table in document.tables:
         for row in table.rows:
@@ -321,7 +335,7 @@ def _extract_docx_text(path: str) -> str:
 
 
 def extract_text(file_path: str, filename: str | None = None) -> str:
-    """统一入口：根据扩展名选择提取方式，返回纯文本。
+    """统一入口（文件路径模式）：根据扩展名选择提取方式，返回纯文本。
 
     file_path: 本地的临时文件路径
     filename:  原始文件名（用于推断扩展名，可选）
@@ -345,6 +359,33 @@ def extract_text(file_path: str, filename: str | None = None) -> str:
     try:
         with open(file_path, "rb") as f:
             return _ocr_image_bytes(f.read())
+    except Exception as e:
+        raise ValueError(f"不支持的文件类型或解析失败：{ext or '未知'}（{e}）")
+
+
+def extract_text_from_bytes(data: bytes, filename: str) -> str:
+    """统一入口（字节流模式）：根据扩展名选择提取方式，返回纯文本。
+
+    data:      文件字节流
+    filename:  原始文件名（用于推断扩展名）
+    """
+    ext = filename.lower()
+    ext = Path(ext).suffix
+
+    if ext in _DOCX_EXTS:
+        return _extract_docx_bytes(data)
+    if ext in _PDF_EXTS:
+        return _extract_pdf_bytes(data)
+    if ext in _IMAGE_EXTS:
+        return _ocr_image_bytes(data)
+
+    # 未知类型：尝试按 PDF 处理，失败再当图片 OCR，再失败报错
+    try:
+        return _extract_pdf_bytes(data)
+    except Exception:
+        pass
+    try:
+        return _ocr_image_bytes(data)
     except Exception as e:
         raise ValueError(f"不支持的文件类型或解析失败：{ext or '未知'}（{e}）")
 

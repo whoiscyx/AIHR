@@ -5,10 +5,11 @@
 """
 
 from pydantic import BaseModel, Field
-from typing import List, Dict
+from typing import List, Dict, Any
 
 
 class DimensionScore(BaseModel):
+    """单个维度的评分结果。"""
     name: str = Field(..., description="维度名称")
     score: int = Field(..., ge=0, le=100, description="该维度得分 0-100")
     comment: str = Field(..., description="该维度简短评语")
@@ -16,6 +17,7 @@ class DimensionScore(BaseModel):
 
 
 class ScoreResult(BaseModel):
+    """完整的简历评分结果。"""
     filename: str = Field("", description="来源文件名")
     overall_score: int = Field(0, ge=0, le=100, description="综合分（按权重计算）")
     dimensions: List[DimensionScore] = Field(..., description="各维度打分（含打分依据）")
@@ -26,8 +28,14 @@ class ScoreResult(BaseModel):
     basis: str = Field("", description="整体打分依据（综合评判理由）")
 
 
+class RecomputeRequest(BaseModel):
+    """权重重算请求体。"""
+    results: List[Dict[str, Any]] = Field(..., description="原始评分结果列表（含维度分）")
+    weights: Dict[str, int] = Field(..., description="新的维度权重")
+
+
 # 期望的维度（顺序即展示顺序；权重可自由调整）
-EXPECTED_DIMENSIONS = [
+EXPECTED_DIMENSIONS: List[str] = [
     "专业技能",
     "工作经验",
     "教育背景",
@@ -49,10 +57,10 @@ DEFAULT_WEIGHTS: Dict[str, int] = {
 
 def compute_overall(dimensions: List[DimensionScore], weights: Dict[str, int]) -> int:
     """按权重计算综合分：Σ(分×权重) / Σ权重，结果四舍五入为 0-100 整数。"""
-    total_w = 0
-    weighted = 0
+    total_w: int = 0
+    weighted: int = 0
     for d in dimensions:
-        w = max(0, int(weights.get(d.name, 0)))
+        w: int = max(0, int(weights.get(d.name, 0)))
         weighted += d.score * w
         total_w += w
     if total_w == 0:
@@ -60,6 +68,23 @@ def compute_overall(dimensions: List[DimensionScore], weights: Dict[str, int]) -
         if not dimensions:
             return 0
         return round(sum(d.score for d in dimensions) / len(dimensions))
+    return round(weighted / total_w)
+
+
+def compute_overall_from_dict(dimensions: List[Dict[str, Any]], weights: Dict[str, int]) -> int:
+    """从字典格式的维度列表计算综合分（用于 API 输入）。"""
+    total_w: int = 0
+    weighted: int = 0
+    for d in dimensions:
+        name: str = str(d.get("name", ""))
+        score: int = int(d.get("score", 0))
+        w: int = max(0, int(weights.get(name, 0)))
+        weighted += score * w
+        total_w += w
+    if total_w == 0:
+        if not dimensions:
+            return 0
+        return round(sum(int(d.get("score", 0)) for d in dimensions) / len(dimensions))
     return round(weighted / total_w)
 
 

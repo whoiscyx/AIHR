@@ -46,6 +46,10 @@
   .err{background:var(--bad-bg);border:1px solid var(--bad);color:var(--bad);
     padding:12px;font-size:13px;margin-top:14px;display:none;}
   .loading{font-size:13px;color:var(--accent);margin-top:12px;display:none;}
+  .progress{font-size:13px;color:var(--ink);}
+  .progress-bar{height:8px;background:#eceff3;border:1px solid var(--line);border-radius:4px;margin:8px 0;overflow:hidden;}
+  .progress-bar > i{display:block;height:100%;background:var(--accent);transition:width 0.3s;}
+  .progress-text{font-size:12px;color:var(--sub);}
   .muted{color:var(--sub);font-size:13px;}
 
   /* 结果区 */
@@ -118,6 +122,7 @@
 
     <button class="btn" id="go" disabled>开始评分</button>
     <div class="loading" id="loading">⏳ 正在识别简历并调用模型评分，请稍候（首次 OCR 需加载模型，可能较慢）…</div>
+    <div class="progress" id="progress" style="display:none;margin-top:12px;"></div>
     <div class="err" id="err"></div>
   </div>
 
@@ -229,12 +234,18 @@ $("go").addEventListener("click", async ()=>{
   fd.append("preferred_schools", $("schools").value.trim());
 
   $("loading").style.display="block";
+  $("progress").style.display="block";
   $("err").style.display="none";
   $("go").disabled=true;
+  updateProgress(0, selectedFiles.length, "");
+
   try{
     const r=await fetch("/api/score",{method:"POST",body:fd});
+    if(!r.ok){
+      const d=await r.json();
+      throw new Error(d.detail||"评分失败");
+    }
     const d=await r.json();
-    if(!r.ok) throw new Error(d.detail||"评分失败");
     rawResults = d.results||[];
     renderResults();
     if(d.errors && d.errors.length){
@@ -245,9 +256,18 @@ $("go").addEventListener("click", async ()=>{
     $("err").style.display="block";
   }finally{
     $("loading").style.display="none";
+    $("progress").style.display="none";
     $("go").disabled=false;
   }
 });
+
+function updateProgress(current, total, filename){
+  const pct = total > 0 ? Math.round((current / total) * 100) : 0;
+  $("progress").innerHTML=
+    '<div class="progress-text">正在处理：'+current+'/'+total+'</div>'+
+    '<div class="progress-bar"><i style="width:'+pct+'%"></i></div>'+
+    (filename ? '<div class="progress-text" style="color:var(--accent)">当前：'+esc(filename)+'</div>' : '');
+}
 
 // ---------- 综合分计算（与后端一致） ----------
 function computeOverall(dims, weights){

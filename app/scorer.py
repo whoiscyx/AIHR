@@ -2,11 +2,13 @@
 
 综合分（overall_score）由后端按用户设定的维度权重计算，模型只负责输出
 各维度分数与打分依据（basis）。
+
+配置项见 app/config.py，支持通过环境变量覆盖。
 """
 
 import json
 import re
-from typing import Optional
+from typing import Optional, Dict, Any
 
 import ollama
 
@@ -17,12 +19,12 @@ from app.schemas import (
     compute_overall,
 )
 from app.prompts import build_messages
+from app.config import DEFAULT_MODEL, MODEL_TEMPERATURE, MODEL_NUM_CTX
 
-DEFAULT_MODEL = "qwen3.5:4b"
-GEN_OPTIONS = {"temperature": 0.2, "num_ctx": 32768}
+GEN_OPTIONS = {"temperature": MODEL_TEMPERATURE, "num_ctx": MODEL_NUM_CTX}
 
 
-def list_models() -> list:
+def list_models() -> list[str]:
     """列出本机 Ollama 已安装的模型名称。"""
     try:
         res = ollama.list()
@@ -33,7 +35,7 @@ def list_models() -> list:
         return []
 
 
-def _normalize(data: dict, weights: dict) -> dict:
+def _normalize(data: Dict[str, Any], weights: Dict[str, int]) -> Dict[str, Any]:
     """校验并兜底补全维度，按权重计算综合分。"""
     # 维度兜底：若缺维度，补 0 分占位
     dims = data.get("dimensions") or []
@@ -86,9 +88,9 @@ def score_resume(
     resume_text: str,
     job_description: str,
     model: str = DEFAULT_MODEL,
-    weights: Optional[dict] = None,
+    weights: Optional[Dict[str, int]] = None,
     preferred_schools: str = "",
-) -> dict:
+) -> Dict[str, Any]:
     """对简历打分，返回标准化 dict（含按权重计算的综合分）。
 
     preferred_schools: 招聘方自定义的认可院校名单（多行/逗号分隔的文本），
