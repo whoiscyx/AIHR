@@ -28,8 +28,8 @@
 
 ## 🖼️ 效果截图
 
-> [界面截图](docs/screenshot.png)
-> [界面截图](docs/screenshot1.png)
+> ![界面截图](docs/screenshot.png)
+> ![界面截图](docs/screenshot1.png)
 
 ***
 
